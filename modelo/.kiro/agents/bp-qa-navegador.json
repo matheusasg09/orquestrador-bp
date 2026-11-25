@@ -1,0 +1,302 @@
+{
+  "name": "bp-qa-navegador",
+  "description": "QA de interface do BP: sobe a aplicação local, navega no Chrome/Edge pelo controle de navegador do BP (sem MCP), valida layout, fluxos, acessibilidade, console e rede contra os critérios de aceite e grava roteiros E2E reutilizáveis.",
+  "prompt": "file://../../.bp/prompts/bp-qa-navegador.md",
+  "model": "claude-sonnet-5.5",
+  "tools": [
+    "read",
+    "write",
+    "shell"
+  ],
+  "excludedTools": [
+    "web"
+  ],
+  "includeMcpJson": false,
+  "includePowers": false,
+  "resources": [
+    "file://.kiro/steering/bp-essencial.md",
+    "skill://.kiro/skills/bp-navegador-qa/SKILL.md",
+    "skill://.kiro/skills/bp-frontend/SKILL.md"
+  ],
+  "permissions": {
+    "rules": [
+      {
+        "capability": "fs_read",
+        "match": [
+          "./**"
+        ],
+        "effect": "allow"
+      },
+      {
+        "capability": "fs_write",
+        "match": [
+          ".bp/estado/entrada/**",
+          "e2e/**",
+          "tests/e2e/**",
+          "test/e2e/**"
+        ],
+        "effect": "allow"
+      },
+      {
+        "capability": "fs_write",
+        "match": [
+          "./**"
+        ],
+        "exclude": [
+          ".bp/estado/entrada/**",
+          "e2e/**",
+          "tests/e2e/**",
+          "test/e2e/**"
+        ],
+        "effect": "deny"
+      },
+      {
+        "capability": "shell",
+        "match": [
+          "node .bp/bp.mjs *",
+          "git status*",
+          "git diff*",
+          "git log*",
+          "git show*",
+          "git blame*",
+          "git ls-files*",
+          "git rev-parse*",
+          "git branch --show-current*"
+        ],
+        "effect": "allow"
+      },
+      {
+        "capability": "shell",
+        "match": [
+          "npm test*",
+          "npm run *",
+          "npm ci*",
+          "node --test*",
+          "mvn *",
+          "mvnw *",
+          "./mvnw *",
+          ".\\mvnw.cmd *",
+          "gradle *",
+          "gradlew *",
+          "./gradlew *",
+          ".\\gradlew.bat *",
+          "dotnet build*",
+          "dotnet test*",
+          "dotnet restore*",
+          "dotnet format*",
+          "python -m pytest*",
+          "pytest*",
+          "go test*",
+          "go build*",
+          "go vet*",
+          "git add *",
+          "git commit -m *",
+          "git switch -c *",
+          "git checkout -b *",
+          "mkdir *",
+          "New-Item -ItemType Directory*"
+        ],
+        "effect": "allow"
+      },
+      {
+        "capability": "sandbox_network",
+        "match": [
+          "localhost",
+          "127.0.0.1"
+        ],
+        "effect": "allow"
+      },
+      {
+        "capability": "web_fetch",
+        "effect": "deny"
+      },
+      {
+        "capability": "web_search",
+        "effect": "deny"
+      },
+      {
+        "capability": "mcp",
+        "effect": "deny"
+      },
+      {
+        "capability": "power",
+        "effect": "deny"
+      },
+      {
+        "capability": "fs_read",
+        "match": [
+          "**/.env",
+          "**/.env.*",
+          "**/*.pem",
+          "**/*.key",
+          "**/*.p12",
+          "**/*.pfx",
+          "**/*.jks",
+          "**/*.keystore",
+          "**/id_rsa*",
+          "**/id_ed25519*",
+          "**/credentials",
+          "**/credentials.json",
+          "**/.npmrc",
+          "**/.pypirc",
+          "**/.netrc"
+        ],
+        "exclude": [
+          "**/.env.example",
+          "**/.env.sample"
+        ],
+        "effect": "deny"
+      },
+      {
+        "capability": "fs_write",
+        "match": [
+          "**/.env",
+          "**/.env.*",
+          "**/*.pem",
+          "**/*.key",
+          "**/*.p12",
+          "**/*.pfx",
+          "**/*.jks",
+          "**/*.keystore",
+          "**/id_rsa*",
+          "**/id_ed25519*",
+          "**/credentials",
+          "**/credentials.json",
+          "**/.npmrc",
+          "**/.pypirc",
+          "**/.netrc"
+        ],
+        "effect": "deny"
+      },
+      {
+        "capability": "fs_write",
+        "match": [
+          ".kiro/**",
+          ".kiroignore",
+          ".bp/**",
+          ".git/**",
+          ".gitattributes",
+          ".gitmodules",
+          ".vscode/**",
+          ".idea/**",
+          ".github/**",
+          ".gitlab-ci.yml",
+          "azure-pipelines*.yml",
+          "Jenkinsfile",
+          ".husky/**"
+        ],
+        "exclude": [
+          ".kiro/specs/**",
+          ".bp/estado/entrada/**"
+        ],
+        "effect": "deny"
+      },
+      {
+        "capability": "shell",
+        "match": [
+          "git push*",
+          "git remote*",
+          "git reset --hard*",
+          "git clean*",
+          "git rebase*",
+          "git filter-branch*",
+          "git commit --no-verify*",
+          "git config*",
+          "git stash*",
+          "git fetch*",
+          "git pull*",
+          "git clone*",
+          "git submodule*",
+          "git worktree*",
+          "node -e*",
+          "node --eval*",
+          "node -p*",
+          "node --print*",
+          "node -r*",
+          "node --require*",
+          "node --import*",
+          "python -c*",
+          "python3 -c*",
+          "py -c*",
+          "pwsh -c*",
+          "pwsh -Command*",
+          "powershell -c*",
+          "powershell -Command*",
+          "powershell -enc*",
+          "pwsh -enc*",
+          "cmd /c*",
+          "bash -c*",
+          "sh -c*",
+          "curl*",
+          "wget*",
+          "Invoke-WebRequest*",
+          "Invoke-RestMethod*",
+          "iwr *",
+          "irm *",
+          "Start-BitsTransfer*",
+          "bitsadmin*",
+          "ssh *",
+          "scp *",
+          "sftp *",
+          "ftp *",
+          "telnet *",
+          "npx *",
+          "pnpx *",
+          "bunx *",
+          "uvx *",
+          "pipx *",
+          "npm publish*",
+          "npm install *",
+          "npm i *",
+          "npm add *",
+          "yarn add*",
+          "pnpm add*",
+          "pip install*",
+          "pip3 install*",
+          "python -m pip*",
+          "dotnet add*",
+          "dotnet tool*",
+          "dotnet nuget*",
+          "mvn deploy*",
+          "mvn release*",
+          "gradle publish*",
+          "./gradlew publish*",
+          "gradlew publish*",
+          "choco *",
+          "winget *",
+          "scoop *",
+          "msiexec*",
+          "sudo *",
+          "runas *",
+          "Start-Process*",
+          "Set-ExecutionPolicy*",
+          "reg *",
+          "schtasks*",
+          "netsh*",
+          "icacls*",
+          "takeown*",
+          "aws *",
+          "az *",
+          "gcloud *",
+          "kubectl *",
+          "helm *",
+          "terraform *",
+          "docker push*",
+          "docker login*",
+          "docker run*",
+          "kiro-cli*",
+          "gh *",
+          "node .bp/bp.mjs init*",
+          "node .bp/bp.mjs instalar*",
+          "node .bp/bp.mjs iniciar*",
+          "node .bp/bp.mjs modelos aplicar*",
+          "printenv*",
+          "Get-ChildItem env:*",
+          "gci env:*",
+          "dir env:*"
+        ],
+        "effect": "deny"
+      }
+    ]
+  }
+}

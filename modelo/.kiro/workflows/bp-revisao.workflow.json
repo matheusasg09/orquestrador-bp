@@ -1,0 +1,48 @@
+{
+  "name": "bp-revisao",
+  "description": "Orquestrador BP: revisão independente (código financeiro e segurança) das mudanças atuais, sem alterar código, com veredito determinístico e relatório.",
+  "inputs": {
+    "escopo": "prompt"
+  },
+  "steps": [
+    {
+      "type": "step",
+      "id": "preparar-revisao",
+      "agent": "bp-contexto",
+      "modelId": "claude-haiku-4.5",
+      "effortLevel": "low",
+      "prompt": "Prepare uma execução de revisão seguindo seu protocolo, com esta demanda: 'Revisão independente das mudanças atuais. Escopo: {{escopo}}'. Regras e layout: não informados. Depois rode node .bp/bp.mjs testes e node .bp/bp.mjs portoes e informe os resumos."
+    },
+    {
+      "type": "parallel",
+      "id": "revisoes-independentes",
+      "joinPolicy": "allSettled",
+      "branches": [
+        {
+          "type": "step",
+          "id": "revisao-codigo",
+          "agent": "bp-revisor-codigo",
+          "modelId": "claude-opus-5.5",
+          "effortLevel": "xhigh",
+          "prompt": "Revise as mudanças atuais (escopo: {{escopo}}) seguindo seu protocolo e registre com node .bp/bp.mjs revisao registrar."
+        },
+        {
+          "type": "step",
+          "id": "revisao-seguranca",
+          "agent": "bp-revisor-seguranca",
+          "modelId": "claude-opus-5.5",
+          "effortLevel": "max",
+          "prompt": "Faça a revisão de segurança das mudanças atuais (escopo: {{escopo}}) seguindo seu protocolo e registre com node .bp/bp.mjs revisao registrar."
+        }
+      ]
+    },
+    {
+      "type": "step",
+      "id": "consolidar-revisao",
+      "agent": "bp-contexto",
+      "modelId": "claude-haiku-4.5",
+      "effortLevel": "low",
+      "prompt": "Rode node .bp/bp.mjs revisao consolidar e depois node .bp/bp.mjs exec relatorio. Responda com o veredito e os motivos."
+    }
+  ]
+}

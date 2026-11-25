@@ -1,0 +1,133 @@
+{
+  "name": "bp-entrega",
+  "description": "Orquestrador BP: entrega completa e autônoma (contexto, spec, plano revisado, implementação por risco, testes, revisão financeira e de segurança, QA no navegador, validação e relatório).",
+  "inputs": {
+    "demanda": "prompt",
+    "regras": "prompt",
+    "layout": "prompt",
+    "destino": "string"
+  },
+  "steps": [
+    {
+      "type": "step",
+      "id": "preparar",
+      "agent": "bp-contexto",
+      "modelId": "claude-haiku-4.5",
+      "effortLevel": "low",
+      "prompt": "Prepare a execução seguindo seu protocolo.\nDEMANDA:\n{{demanda}}\n\nREGRAS DE NEGÓCIO:\n{{regras}}\n\nLAYOUT E INTERFACE:\n{{layout}}\n\nDESTINO (pasta, módulo ou repositório):\n{{destino}}",
+      "artifacts": { "contexto": ".bp/estado/entrada/contexto.md" }
+    },
+    {
+      "type": "repeat",
+      "id": "planejamento",
+      "maxIterations": 3,
+      "onMaxIterations": "continue",
+      "stopWhen": "{{revisar-plano.output}} contains VERDICT: APPROVED",
+      "steps": [
+        {
+          "type": "step",
+          "id": "planejar",
+          "agent": "bp-planejador",
+          "modelId": "claude-opus-5.5",
+          "effortLevel": "high",
+          "prompt": "Planeje a execução ativa seguindo seu protocolo. Leia .bp/estado/execucao/DEMANDA.md e {{artifacts.contexto}}. Se .bp/estado/entrada/correcoes-plano.md existir, incorpore todas as correções pedidas. Não faça perguntas: registre premissas. Termine com send_message severity success.",
+          "artifacts": { "plano": ".bp/estado/entrada/plano.json" }
+        },
+        {
+          "type": "step",
+          "id": "revisar-plano",
+          "agent": "bp-revisor-plano",
+          "modelId": "claude-opus-5.5",
+          "effortLevel": "high",
+          "prompt": "Revise a spec em .kiro/specs/ e o plano {{artifacts.plano}} contra .bp/estado/execucao/DEMANDA.md seguindo seu protocolo. A última linha da resposta deve ser exatamente VERDICT: APPROVED ou VERDICT: NEEDS_CHANGES."
+        }
+      ]
+    },
+    {
+      "type": "repeat",
+      "id": "implementacao",
+      "maxIterations": 60,
+      "onMaxIterations": "continue",
+      "stopCondition": {
+        "fileCheck": { "path": ".bp/estado/execucao/status.json", "jsonPath": "complete", "value": true }
+      },
+      "steps": [
+        {
+          "type": "step",
+          "id": "executar-tarefa",
+          "agent": "bp-despachante",
+          "modelId": "claude-haiku-4.5",
+          "effortLevel": "low",
+          "prompt": "Execute exatamente uma tarefa do plano seguindo seu protocolo (exec proxima, delegar ao agente indicado, testes, concluir ou falhar). Se não houver tarefa executável, responda 'sem tarefas'."
+        }
+      ]
+    },
+    {
+      "type": "repeat",
+      "id": "revisao",
+      "maxIterations": 3,
+      "onMaxIterations": "continue",
+      "stopCondition": {
+        "fileCheck": { "path": ".bp/estado/execucao/status.json", "jsonPath": "revisaoAprovada", "value": true }
+      },
+      "steps": [
+        {
+          "type": "step",
+          "id": "corrigir",
+          "agent": "bp-despachante",
+          "modelId": "claude-haiku-4.5",
+          "effortLevel": "low",
+          "prompt": "Rodada de correção e verificação seguindo a seção 'Correções' do seu protocolo: aplique .bp/estado/execucao/CORRECOES.md quando houver pendências, depois rode os testes e os portões e trate os bloqueantes."
+        },
+        {
+          "type": "parallel",
+          "id": "revisoes",
+          "joinPolicy": "allSettled",
+          "branches": [
+            {
+              "type": "step",
+              "id": "revisar-codigo",
+              "agent": "bp-revisor-codigo",
+              "modelId": "claude-opus-5.5",
+              "effortLevel": "xhigh",
+              "prompt": "Revise o diff da execução ativa seguindo seu protocolo e registre a revisão com node .bp/bp.mjs revisao registrar."
+            },
+            {
+              "type": "step",
+              "id": "revisar-seguranca",
+              "agent": "bp-revisor-seguranca",
+              "modelId": "claude-opus-5.5",
+              "effortLevel": "max",
+              "prompt": "Faça a revisão de segurança do diff da execução ativa seguindo seu protocolo e registre com node .bp/bp.mjs revisao registrar."
+            },
+            {
+              "type": "step",
+              "id": "qa-interface",
+              "agent": "bp-qa-navegador",
+              "modelId": "claude-sonnet-5.5",
+              "effortLevel": "low",
+              "prompt": "Faça o QA de interface da execução ativa seguindo seu protocolo e registre com node .bp/bp.mjs revisao registrar. Se a entrega não tiver interface, registre a revisão 'qa' sem achados explicando o motivo."
+            }
+          ]
+        },
+        {
+          "type": "step",
+          "id": "consolidar",
+          "agent": "bp-contexto",
+          "modelId": "claude-haiku-4.5",
+          "effortLevel": "low",
+          "prompt": "Rode node .bp/bp.mjs revisao consolidar e responda apenas com a saída do comando."
+        }
+      ]
+    },
+    {
+      "type": "step",
+      "id": "validar",
+      "agent": "bp-validador",
+      "modelId": "claude-sonnet-5.5",
+      "effortLevel": "medium",
+      "prompt": "Faça a validação final da execução ativa seguindo seu protocolo e gere o relatório com node .bp/bp.mjs exec relatorio. Responda com o resumo do relatório.",
+      "artifacts": { "relatorio": ".bp/estado/execucao/RELATORIO.md" }
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "name": "orquestrador-bp",
+  "version": "1.0.0",
+  "description": "Orquestrador BP: orquestração de agentes de desenvolvimento sobre o Kiro, com RAG local, portões de qualidade, revisão financeira e controle de navegador sem dependências externas.",
+  "private": true,
+  "type": "module",
+  "license": "UNLICENSED",
+  "engines": {
+    "node": ">=20.11"
+  },
+  "bin": {
+    "bp": "bin/bp.mjs"
+  },
+  "scripts": {
+    "test": "node --test --test-reporter=spec test/",
+    "verificar": "node bin/bp.mjs autoverificacao",
+    "navegador:e2e": "node --test test/navegador-real.test.mjs"
+  },
+  "dependencies": {},
+  "devDependencies": {}
+}

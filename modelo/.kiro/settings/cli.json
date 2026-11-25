@@ -1,0 +1,12 @@
+{
+  "chat.defaultAgent": "bp-orquestrador",
+  "chat.disableInheritingDefaultResources": true,
+  "chat.enableAutoAgentUpgrade": false,
+  "chat.enableWorkflows": true,
+  "telemetry.enabled": false,
+  "chat.modelDefaults": {
+    "claude-sonnet-5.5": { "output_config": { "effort": "low" } },
+    "claude-haiku-4.5": { "output_config": { "effort": "low" } },
+    "claude-opus-5.5": { "output_config": { "effort": "high" } }
+  }
+}

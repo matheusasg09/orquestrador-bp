@@ -1,0 +1,131 @@
+{
+  "name": "bp-correcao",
+  "description": "Orquestrador BP: correção de defeito com reprodução por teste, causa raiz, correção mínima, regressão, revisões e relatório.",
+  "inputs": {
+    "problema": "prompt",
+    "evidencias": "prompt"
+  },
+  "steps": [
+    {
+      "type": "step",
+      "id": "preparar-correcao",
+      "agent": "bp-contexto",
+      "modelId": "claude-haiku-4.5",
+      "effortLevel": "low",
+      "prompt": "Prepare a execução seguindo seu protocolo, tratando-a como correção de defeito.\nDEMANDA (defeito):\n{{problema}}\n\nREGRAS DE NEGÓCIO: comportamento atual que deve ser preservado fora do defeito.\n\nLAYOUT E INTERFACE: não alterar, salvo se for o defeito.\n\nEVIDÊNCIAS (logs, passos, prints descritos):\n{{evidencias}}",
+      "artifacts": { "contexto": ".bp/estado/entrada/contexto.md" }
+    },
+    {
+      "type": "repeat",
+      "id": "diagnostico",
+      "maxIterations": 2,
+      "onMaxIterations": "continue",
+      "stopWhen": "{{revisar-diagnostico.output}} contains VERDICT: APPROVED",
+      "steps": [
+        {
+          "type": "step",
+          "id": "diagnosticar",
+          "agent": "bp-planejador",
+          "modelId": "claude-opus-5.5",
+          "effortLevel": "high",
+          "prompt": "Planeje a correção seguindo a seção 'Defeitos' do seu protocolo (bugfix.md com comportamento atual, esperado e inalterado). Leia .bp/estado/execucao/DEMANDA.md e {{artifacts.contexto}}; incorpore .bp/estado/entrada/correcoes-plano.md se existir. A primeira tarefa deve ser um teste que reproduz o defeito e falha.",
+          "artifacts": { "plano": ".bp/estado/entrada/plano.json" }
+        },
+        {
+          "type": "step",
+          "id": "revisar-diagnostico",
+          "agent": "bp-revisor-plano",
+          "modelId": "claude-opus-5.5",
+          "effortLevel": "high",
+          "prompt": "Revise o diagnóstico e o plano {{artifacts.plano}} seguindo seu protocolo, verificando se a causa raiz está comprovada e se o comportamento inalterado está protegido por testes. A última linha deve ser exatamente VERDICT: APPROVED ou VERDICT: NEEDS_CHANGES."
+        }
+      ]
+    },
+    {
+      "type": "repeat",
+      "id": "implementacao-correcao",
+      "maxIterations": 20,
+      "onMaxIterations": "continue",
+      "stopCondition": {
+        "fileCheck": { "path": ".bp/estado/execucao/status.json", "jsonPath": "complete", "value": true }
+      },
+      "steps": [
+        {
+          "type": "step",
+          "id": "executar-correcao",
+          "agent": "bp-despachante",
+          "modelId": "claude-haiku-4.5",
+          "effortLevel": "low",
+          "prompt": "Execute exatamente uma tarefa do plano seguindo seu protocolo. Se não houver tarefa executável, responda 'sem tarefas'."
+        }
+      ]
+    },
+    {
+      "type": "repeat",
+      "id": "revisao-correcao",
+      "maxIterations": 3,
+      "onMaxIterations": "continue",
+      "stopCondition": {
+        "fileCheck": { "path": ".bp/estado/execucao/status.json", "jsonPath": "revisaoAprovada", "value": true }
+      },
+      "steps": [
+        {
+          "type": "step",
+          "id": "corrigir-achados",
+          "agent": "bp-despachante",
+          "modelId": "claude-haiku-4.5",
+          "effortLevel": "low",
+          "prompt": "Rodada de correção e verificação seguindo a seção 'Correções' do seu protocolo."
+        },
+        {
+          "type": "parallel",
+          "id": "revisoes-correcao",
+          "joinPolicy": "allSettled",
+          "branches": [
+            {
+              "type": "step",
+              "id": "revisar-codigo-correcao",
+              "agent": "bp-revisor-codigo",
+              "modelId": "claude-opus-5.5",
+              "effortLevel": "xhigh",
+              "prompt": "Revise o diff da correção seguindo seu protocolo, com atenção a regressões, e registre com node .bp/bp.mjs revisao registrar."
+            },
+            {
+              "type": "step",
+              "id": "revisar-seguranca-correcao",
+              "agent": "bp-revisor-seguranca",
+              "modelId": "claude-opus-5.5",
+              "effortLevel": "max",
+              "prompt": "Faça a revisão de segurança do diff da correção seguindo seu protocolo e registre com node .bp/bp.mjs revisao registrar."
+            },
+            {
+              "type": "step",
+              "id": "qa-correcao",
+              "agent": "bp-qa-navegador",
+              "modelId": "claude-sonnet-5.5",
+              "effortLevel": "low",
+              "prompt": "Se o defeito tiver efeito visível na interface, verifique a correção no navegador seguindo seu protocolo; senão registre a revisão 'qa' sem achados explicando o motivo."
+            }
+          ]
+        },
+        {
+          "type": "step",
+          "id": "consolidar-correcao",
+          "agent": "bp-contexto",
+          "modelId": "claude-haiku-4.5",
+          "effortLevel": "low",
+          "prompt": "Rode node .bp/bp.mjs revisao consolidar e responda apenas com a saída do comando."
+        }
+      ]
+    },
+    {
+      "type": "step",
+      "id": "validar-correcao",
+      "agent": "bp-validador",
+      "modelId": "claude-sonnet-5.5",
+      "effortLevel": "medium",
+      "prompt": "Faça a validação final da correção seguindo seu protocolo e gere o relatório com node .bp/bp.mjs exec relatorio. Responda com o resumo.",
+      "artifacts": { "relatorio": ".bp/estado/execucao/RELATORIO.md" }
+    }
+  ]
+}

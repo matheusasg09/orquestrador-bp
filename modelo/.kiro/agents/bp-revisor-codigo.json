@@ -1,0 +1,275 @@
+{
+  "name": "bp-revisor-codigo",
+  "description": "Revisor de código do BP com foco em instituição financeira: correção, precisão monetária, regras de negócio, concorrência, idempotência, tratamento de erros, observabilidade, legibilidade e testes. Registra achados estruturados; não altera código.",
+  "prompt": "file://../../.bp/prompts/bp-revisor-codigo.md",
+  "model": "claude-opus-5.5",
+  "tools": [
+    "read",
+    "write",
+    "shell"
+  ],
+  "excludedTools": [
+    "web"
+  ],
+  "includeMcpJson": false,
+  "includePowers": false,
+  "resources": [
+    "file://.kiro/steering/bp-essencial.md",
+    "skill://.kiro/skills/bp-revisao-codigo-financeiro/SKILL.md",
+    "skill://.kiro/skills/bp-paradigmas-arquitetura/SKILL.md",
+    "skill://.kiro/skills/bp-dominio-previdencia/SKILL.md",
+    "skill://.kiro/skills/bp-qualidade-testes/SKILL.md"
+  ],
+  "permissions": {
+    "rules": [
+      {
+        "capability": "fs_read",
+        "match": [
+          "./**"
+        ],
+        "effect": "allow"
+      },
+      {
+        "capability": "fs_write",
+        "match": [
+          ".bp/estado/entrada/**"
+        ],
+        "effect": "allow"
+      },
+      {
+        "capability": "fs_write",
+        "match": [
+          "./**"
+        ],
+        "exclude": [
+          ".bp/estado/entrada/**"
+        ],
+        "effect": "deny"
+      },
+      {
+        "capability": "shell",
+        "match": [
+          "*"
+        ],
+        "exclude": [
+          "node .bp/bp.mjs *",
+          "git status*",
+          "git diff*",
+          "git log*",
+          "git show*",
+          "git blame*",
+          "git ls-files*",
+          "git rev-parse*",
+          "git branch --show-current*"
+        ],
+        "effect": "deny"
+      },
+      {
+        "capability": "shell",
+        "match": [
+          "node .bp/bp.mjs *",
+          "git status*",
+          "git diff*",
+          "git log*",
+          "git show*",
+          "git blame*",
+          "git ls-files*",
+          "git rev-parse*",
+          "git branch --show-current*"
+        ],
+        "effect": "allow"
+      },
+      {
+        "capability": "web_fetch",
+        "effect": "deny"
+      },
+      {
+        "capability": "web_search",
+        "effect": "deny"
+      },
+      {
+        "capability": "mcp",
+        "effect": "deny"
+      },
+      {
+        "capability": "power",
+        "effect": "deny"
+      },
+      {
+        "capability": "fs_read",
+        "match": [
+          "**/.env",
+          "**/.env.*",
+          "**/*.pem",
+          "**/*.key",
+          "**/*.p12",
+          "**/*.pfx",
+          "**/*.jks",
+          "**/*.keystore",
+          "**/id_rsa*",
+          "**/id_ed25519*",
+          "**/credentials",
+          "**/credentials.json",
+          "**/.npmrc",
+          "**/.pypirc",
+          "**/.netrc"
+        ],
+        "exclude": [
+          "**/.env.example",
+          "**/.env.sample"
+        ],
+        "effect": "deny"
+      },
+      {
+        "capability": "fs_write",
+        "match": [
+          "**/.env",
+          "**/.env.*",
+          "**/*.pem",
+          "**/*.key",
+          "**/*.p12",
+          "**/*.pfx",
+          "**/*.jks",
+          "**/*.keystore",
+          "**/id_rsa*",
+          "**/id_ed25519*",
+          "**/credentials",
+          "**/credentials.json",
+          "**/.npmrc",
+          "**/.pypirc",
+          "**/.netrc"
+        ],
+        "effect": "deny"
+      },
+      {
+        "capability": "fs_write",
+        "match": [
+          ".kiro/**",
+          ".kiroignore",
+          ".bp/**",
+          ".git/**",
+          ".gitattributes",
+          ".gitmodules",
+          ".vscode/**",
+          ".idea/**",
+          ".github/**",
+          ".gitlab-ci.yml",
+          "azure-pipelines*.yml",
+          "Jenkinsfile",
+          ".husky/**"
+        ],
+        "exclude": [
+          ".kiro/specs/**",
+          ".bp/estado/entrada/**"
+        ],
+        "effect": "deny"
+      },
+      {
+        "capability": "shell",
+        "match": [
+          "git push*",
+          "git remote*",
+          "git reset --hard*",
+          "git clean*",
+          "git rebase*",
+          "git filter-branch*",
+          "git commit --no-verify*",
+          "git config*",
+          "git stash*",
+          "git fetch*",
+          "git pull*",
+          "git clone*",
+          "git submodule*",
+          "git worktree*",
+          "node -e*",
+          "node --eval*",
+          "node -p*",
+          "node --print*",
+          "node -r*",
+          "node --require*",
+          "node --import*",
+          "python -c*",
+          "python3 -c*",
+          "py -c*",
+          "pwsh -c*",
+          "pwsh -Command*",
+          "powershell -c*",
+          "powershell -Command*",
+          "powershell -enc*",
+          "pwsh -enc*",
+          "cmd /c*",
+          "bash -c*",
+          "sh -c*",
+          "curl*",
+          "wget*",
+          "Invoke-WebRequest*",
+          "Invoke-RestMethod*",
+          "iwr *",
+          "irm *",
+          "Start-BitsTransfer*",
+          "bitsadmin*",
+          "ssh *",
+          "scp *",
+          "sftp *",
+          "ftp *",
+          "telnet *",
+          "npx *",
+          "pnpx *",
+          "bunx *",
+          "uvx *",
+          "pipx *",
+          "npm publish*",
+          "npm install *",
+          "npm i *",
+          "npm add *",
+          "yarn add*",
+          "pnpm add*",
+          "pip install*",
+          "pip3 install*",
+          "python -m pip*",
+          "dotnet add*",
+          "dotnet tool*",
+          "dotnet nuget*",
+          "mvn deploy*",
+          "mvn release*",
+          "gradle publish*",
+          "./gradlew publish*",
+          "gradlew publish*",
+          "choco *",
+          "winget *",
+          "scoop *",
+          "msiexec*",
+          "sudo *",
+          "runas *",
+          "Start-Process*",
+          "Set-ExecutionPolicy*",
+          "reg *",
+          "schtasks*",
+          "netsh*",
+          "icacls*",
+          "takeown*",
+          "aws *",
+          "az *",
+          "gcloud *",
+          "kubectl *",
+          "helm *",
+          "terraform *",
+          "docker push*",
+          "docker login*",
+          "docker run*",
+          "kiro-cli*",
+          "gh *",
+          "node .bp/bp.mjs init*",
+          "node .bp/bp.mjs instalar*",
+          "node .bp/bp.mjs iniciar*",
+          "node .bp/bp.mjs modelos aplicar*",
+          "printenv*",
+          "Get-ChildItem env:*",
+          "gci env:*",
+          "dir env:*"
+        ],
+        "effect": "deny"
+      }
+    ]
+  }
+}

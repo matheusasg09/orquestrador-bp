@@ -1,0 +1,31 @@
+# Orquestrador BP: arquivos que o agente do Kiro não deve ler.
+# Segredos e credenciais
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+*.keystore
+id_rsa*
+id_ed25519*
+credentials
+credentials.json
+.npmrc
+.pypirc
+.netrc
+# Estado do orquestrador que não serve ao agente (trilha de auditoria, razão de tokens).
+# As capturas de tela continuam legíveis: o QA compara o layout visualmente.
+.bp/estado/auditoria/
+.bp/estado/tokens/
+.bp/backup-*/
+# Artefatos gerados (ruído e desperdício de tokens)
+node_modules/
+dist/
+build/
+target/
+coverage/
+*.min.js
+*.map

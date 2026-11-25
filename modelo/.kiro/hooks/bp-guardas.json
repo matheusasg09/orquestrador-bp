@@ -1,0 +1,85 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "bp-guarda-shell",
+      "description": "Bloqueia rede, nuvem, alteração de sistema, dependências novas, apagamentos amplos, despejo de segredos e adulteração da governança.",
+      "trigger": "PreToolUse",
+      "matcher": "shell",
+      "action": { "type": "command", "command": "node .bp/bp.mjs gancho pre-shell" },
+      "timeout": 20
+    },
+    {
+      "name": "bp-guarda-escrita",
+      "description": "Bloqueia escrita fora do workspace, em arquivos de governança ou de segredo, e conteúdo com segredos ou dados pessoais.",
+      "trigger": "PreToolUse",
+      "matcher": "write",
+      "action": { "type": "command", "command": "node .bp/bp.mjs gancho pre-escrita" },
+      "timeout": 20
+    },
+    {
+      "name": "bp-guarda-leitura",
+      "description": "Bloqueia leitura de arquivos de segredo (.env, chaves, keystores).",
+      "trigger": "PreToolUse",
+      "matcher": "read",
+      "action": { "type": "command", "command": "node .bp/bp.mjs gancho pre-leitura" },
+      "timeout": 20
+    },
+    {
+      "name": "bp-guarda-geral",
+      "description": "Rede de segurança para ferramentas fora das categorias shell, write e read: caminhos suspeitos, fora do workspace ou de segredo.",
+      "trigger": "PreToolUse",
+      "action": { "type": "command", "command": "node .bp/bp.mjs gancho pre-ferramenta" },
+      "timeout": 20
+    },
+    {
+      "name": "bp-pos-ferramenta",
+      "description": "Razão de tokens e alerta imediato de padrões inseguros no que acabou de ser escrito.",
+      "trigger": "PostToolUse",
+      "action": { "type": "command", "command": "node .bp/bp.mjs gancho pos-ferramenta" },
+      "timeout": 20
+    },
+    {
+      "name": "bp-contexto-prompt",
+      "description": "Injeta estado da execução e trechos RAG relevantes com orçamento de tokens.",
+      "trigger": "UserPromptSubmit",
+      "action": { "type": "command", "command": "node .bp/bp.mjs gancho prompt" },
+      "timeout": 30
+    },
+    {
+      "name": "bp-inicio-sessao",
+      "description": "Mostra em uma linha a execução ativa e a tarefa em andamento.",
+      "trigger": "SessionStart",
+      "action": { "type": "command", "command": "node .bp/bp.mjs gancho inicio-sessao" },
+      "timeout": 15
+    },
+    {
+      "name": "bp-parada",
+      "description": "Impede encerrar turno com tarefa em andamento e testes vermelhos ou não executados.",
+      "trigger": "Stop",
+      "action": { "type": "command", "command": "node .bp/bp.mjs gancho parada" },
+      "timeout": 15
+    },
+    {
+      "name": "bp-subagente-parada",
+      "description": "Registra no razão de tokens o tamanho da resposta de cada subagente.",
+      "trigger": "SubagentStop",
+      "action": { "type": "command", "command": "node .bp/bp.mjs gancho subagente-parada" },
+      "timeout": 15
+    },
+    {
+      "name": "bp-pre-compactacao",
+      "description": "Salva o essencial da execução antes de a conversa ser resumida.",
+      "trigger": "PreCompact",
+      "action": { "type": "command", "command": "node .bp/bp.mjs gancho pre-compactacao" },
+      "timeout": 15
+    },
+    {
+      "name": "bp-pos-compactacao",
+      "description": "Restaura o essencial da execução depois da compactação.",
+      "trigger": "PostCompact",
+      "action": { "type": "command", "command": "node .bp/bp.mjs gancho pos-compactacao" },
+      "timeout": 15
+    }
+  ]
+}
